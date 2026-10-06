@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Punktlandung – Brüche auf der Zahlengeraden</title>
+<style>
+/* ---------- Farben: hell = Matheheft, dunkel = Tafel ---------- */
+:root{
+  --paper:#fbfcff; --grid:#dde7f6;
+  --ink:#1b2a4a; --ink-soft:#4d5b78;
+  --panel:#ffffff; --panel-border:#c5d2e8; --edge:rgba(27,42,74,.22);
+  --hl1:#ffe14a; --hl2:#fff1a8;
+  --sun:#ffd83a; --sun-ink:#1b2a4a;
+  --blue:#2a56d6; --blue-ink:#ffffff;
+  --ok:#157f55; --ok-bg:#def5e9;
+  --bad:#c92a41; --bad-bg:#fde5e8;
+  --note:#fff6bf; --note-ink:#1b2a4a; --note-edge:#e8c93a;
+  --card:#ffffff; --card-ink:#1b2a4a;
+  --star-off:#cdd7e8;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1c352f; --grid:#25433b;
+    --ink:#f3f1e7; --ink-soft:#bccbc3;
+    --panel:#23413a; --panel-border:#3b5f55; --edge:rgba(0,0,0,.35);
+    --hl1:rgba(242,207,74,.50); --hl2:rgba(242,207,74,.24);
+    --sun:#f2cf4a; --sun-ink:#1b2a4a;
+    --blue:#9dbdff; --blue-ink:#11203c;
+    --ok:#74e0b0; --ok-bg:#1f4a3b;
+    --bad:#ff97a4; --bad-bg:#4f2b32;
+    --note:#4a4524; --note-ink:#f3f1e7; --note-edge:#f2cf4a;
+    --card:#f6f4ea; --card-ink:#1b2a4a;
+    --star-off:#3f5d54;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1c352f; --grid:#25433b;
+  --ink:#f3f1e7; --ink-soft:#bccbc3;
+  --panel:#23413a; --panel-border:#3b5f55; --edge:rgba(0,0,0,.35);
+  --hl1:rgba(242,207,74,.50); --hl2:rgba(242,207,74,.24);
+  --sun:#f2cf4a; --sun-ink:#1b2a4a;
+  --blue:#9dbdff; --blue-ink:#11203c;
+  --ok:#74e0b0; --ok-bg:#1f4a3b;
+  --bad:#ff97a4; --bad-bg:#4f2b32;
+  --note:#4a4524; --note-ink:#f3f1e7; --note-edge:#f2cf4a;
+  --card:#f6f4ea; --card-ink:#1b2a4a;
+  --star-off:#3f5d54;
+}
+
+/* ---------- Grundlayout ---------- */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;min-height:100%;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Nunito","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:17px;line-height:1.45;
+  font-variant-numeric:lining-nums;
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.app{max-width:1080px;margin:0 auto;padding:12px 18px 28px}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+
+/* ---------- Bruchdarstellung ---------- */
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;font-weight:800;margin:0 .14em;font-size:.86em;font-variant-numeric:lining-nums tabular-nums}
+.fr>span:first-child{border-bottom:.12em solid currentColor;padding:0 .22em .03em}
+.fr>span:last-child{padding:.04em .22em 0}
+.mx{display:inline-flex;align-items:center;vertical-align:middle;font-weight:800;margin:0 .1em}
+.mx>.w{font-size:1.18em;margin-right:.02em}
+.mx>.fr{margin:0 .06em}
+.prose{line-height:2.05}
+
+/* ---------- Schaltflächen ---------- */
+.btn{
+  min-height:48px;padding:0 20px;border-radius:13px;
+  border:2px solid var(--ink);background:var(--panel);color:var(--ink);
+  font-weight:800;font-size:17px;cursor:pointer;
+  box-shadow:0 3px 0 var(--edge);
+  -webkit-user-select:none;user-select:none;
+}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
+.btn.primary{background:var(--blue);color:var(--blue-ink);border-color:var(--blue)}
+.btn.quiet{border-color:var(--panel-border);box-shadow:none;font-weight:700}
+.btn.small{min-height:42px;padding:0 16px;font-size:16px}
+.btn:disabled{opacity:.42;cursor:default;box-shadow:none}
+
+/* ---------- Startseite ---------- */
+.home{max-width:880px}
+.hero h1{font-size:clamp(40px,8vw,68px);line-height:1;letter-spacing:-.02em;font-weight:900;margin-top:10px}
+.hero .tagline{font-size:clamp(19px,3vw,24px);font-weight:700;color:var(--ink-soft);margin-top:6px}
+.hero-line{display:block;width:100%;max-width:660px;height:auto;margin:6px 0 2px}
+.hero-line .axis{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.hero-line .tick{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round}
+.hero-line .arrow{fill:var(--ink)}
+.hero-line text{fill:var(--ink);font-weight:800;font-size:24px}
+.hero-line .flag rect{fill:var(--card);stroke:var(--card-ink);stroke-width:2.5}
+.hero-line .flag text{fill:var(--card-ink);font-size:21px}
+.hero-line .flag .bar{stroke:var(--card-ink);stroke-width:2.5}
+.hero-line .flag .stem{stroke:var(--ink);stroke-width:2.5}
+.hero-line .flag circle{fill:var(--blue)}
+.hero-line .flag{animation:land .7s cubic-bezier(.3,1.5,.5,1) .25s both}
+@keyframes land{from{transform:translateY(-34px);opacity:0}to{transform:none;opacity:1}}
+.lead{font-size:19px;max-width:54ch;margin-top:14px}
+.how{list-style:none;padding:0;margin:18px 0 26px;display:grid;gap:10px;counter-reset:how;max-width:60ch}
+.how li{counter-increment:how;display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+.how li::before{content:counter(how);width:32px;height:32px;border-radius:50%;background:var(--blue);color:var(--blue-ink);display:grid;place-items:center;font-weight:900}
+.how strong{display:block}
+.home h2{font-size:24px;font-weight:900;margin-bottom:12px}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:760px){.levels{grid-template-columns:1fr}}
+.level{
+  text-align:left;display:flex;flex-direction:column;gap:6px;
+  padding:16px 16px 14px;border-radius:16px;cursor:pointer;
+  background:var(--panel);border:2px solid var(--ink);box-shadow:0 5px 0 var(--edge);
+}
+.level:active{transform:translateY(3px);box-shadow:0 2px 0 var(--edge)}
+.level .no{font-weight:800;color:var(--ink-soft);font-size:15px}
+.level .name{font-size:22px;font-weight:900;line-height:1.15}
+.level .desc{font-size:16px;flex:1}
+.level .best{display:flex;align-items:center;gap:8px;margin-top:6px;padding-top:10px;border-top:2px dashed var(--panel-border);font-size:15px;font-weight:700;min-height:42px}
+.medal{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:900;font-size:14px;border:2px solid var(--ink)}
+.medal.gold{background:var(--sun);color:var(--sun-ink)}
+.medal.silber{background:#dfe6f1;color:#1b2a4a}
+.medal.bronze{background:#e9b98c;color:#1b2a4a}
+.rules{margin-top:20px;color:var(--ink-soft);max-width:70ch;font-size:16px}
+
+/* ---------- Kopfzeile im Spiel ---------- */
+.bar{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:4px 0 10px;border-bottom:2px solid var(--ink)}
+.bar .lvl{font-weight:900;font-size:18px}
+.bar .count{font-weight:700;color:var(--ink-soft);font-size:15px}
+.bar .spacer{flex:1}
+.pips{display:flex;gap:5px}
+.pip{width:26px;height:26px;border:2px solid var(--panel-border);border-radius:6px;display:grid;place-items:center;font-size:14px;font-weight:900;background:var(--panel);color:transparent}
+.pip.done{background:var(--sun);border-color:var(--ink);color:var(--sun-ink)}
+.pip.now{border-color:var(--ink);box-shadow:0 0 0 3px var(--sun)}
+.starcount{display:flex;align-items:center;gap:5px;font-weight:900;font-size:19px}
+.star{width:1.15em;height:1.15em;fill:var(--sun);stroke:var(--ink);stroke-width:1.4;stroke-linejoin:round;flex:none}
+.star.off{fill:var(--star-off);stroke:none}
+.streak{font-weight:900;font-size:15px;padding:3px 10px;border-radius:999px;background:var(--blue);color:var(--blue-ink)}
+.streak.bump{animation:bump .45s}
+@keyframes bump{40%{transform:scale(1.25)}}
+
+/* ---------- Arbeitsauftrag ---------- */
+.steps{display:flex;gap:8px;margin:14px 0 8px;flex-wrap:wrap}
+.stepchip{display:flex;align-items:center;gap:7px;padding:3px 13px 3px 3px;border-radius:999px;border:2px solid var(--panel-border);background:var(--panel);color:var(--ink-soft);font-weight:800;font-size:15px}
+.stepchip b{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--panel-border);color:var(--ink);font-weight:900}
+.stepchip.on{border-color:var(--ink);color:var(--ink)}
+.stepchip.on b{background:var(--blue);color:var(--blue-ink)}
+.stepchip.past b{background:var(--ok);color:var(--paper)}
+.task h2{font-size:clamp(22px,3.2vw,29px);font-weight:900;line-height:1.2}
+.task p{max-width:66ch;margin-top:3px;font-size:18px}
+.task .note{font-weight:800}
+
+/* ---------- Zahlengerade ---------- */
+.stage{position:relative;margin-top:8px;transition:height .2s ease;-webkit-user-select:none;user-select:none}
+.stage svg{position:absolute;inset:0;display:block;overflow:visible}
+.stage .hl.a{fill:var(--hl1)} .stage .hl.b{fill:var(--hl2)}
+.stage .axis{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.stage .axis.dash{stroke-dasharray:3 7}
+.stage .arrow{fill:var(--ink)}
+.stage .tick{stroke:var(--ink);stroke-linecap:round}
+.stage .tick.int{stroke-width:3.5}
+.stage .tick.sub{stroke-width:2.2}
+.stage svg.fresh .tick.sub{transform-box:fill-box;transform-origin:center;animation:tickin .28s ease both}
+@keyframes tickin{from{transform:scaleY(0)}}
+.stage .num{fill:var(--ink);font-weight:900;font-size:24px}
+.snap{position:absolute;top:0;width:0;border-left:2px dashed var(--blue);pointer-events:none}
+.snap::after{content:"";position:absolute;bottom:-11px;left:-12px;width:22px;height:22px;border-radius:50%;border:3px solid var(--blue);background:transparent}
+#flags{position:absolute;inset:0;pointer-events:none}
+#flags .card{pointer-events:auto}
+
+/* ---------- Karten ---------- */
+.below-line{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:30px;margin-top:2px}
+.tray-label{font-weight:700;color:var(--ink-soft);font-size:16px}
+.unit{font-weight:800;font-size:16px;padding:2px 12px;border-radius:999px;background:var(--hl1);color:var(--ink);border:2px solid var(--ink)}
+.tray{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.slot{width:64px;height:64px;border:2px dashed var(--panel-border);border-radius:15px;display:grid;place-items:center}
+.card{
+  position:relative;width:56px;height:56px;padding:0;
+  display:grid;place-items:center;
+  background:var(--card);color:var(--card-ink);
+  border:2px solid var(--card-ink);border-radius:12px;
+  font-size:20px;line-height:1;
+  box-shadow:0 3px 0 var(--edge);
+  cursor:grab;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+}
+.card .fr{font-size:1em;margin:0}
+.card .mx{margin:0}
+.card .mx .w{font-size:1.25em}
+.card .mx .fr{font-size:.8em;margin-left:.08em}
+.card.idle{cursor:default}
+.card.selected{box-shadow:0 0 0 4px var(--blue),0 3px 0 var(--edge)}
+.card.placed{position:absolute;transition:left .14s ease,top .14s ease}
+.card.placed::after{content:"";position:absolute;left:50%;top:calc(100% + 2px);width:2px;margin-left:-1px;height:var(--stem,24px);background:var(--ink)}
+.card.placed::before{content:"";position:absolute;left:50%;top:calc(100% + var(--stem,24px) - 5px);width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--blue);border:2px solid var(--paper);z-index:1}
+.card.dragging{z-index:200 !important;cursor:grabbing;box-shadow:0 12px 18px var(--edge);transition:none}
+.card.dragging::after,.card.dragging::before{display:none}
+.card.locked{background:var(--ok-bg);border-color:var(--ok);cursor:default;color:var(--ink)}
+.card.locked::before{background:var(--ok)}
+.card.missed{border-color:var(--bad);background:var(--bad-bg);color:var(--ink)}
+.card.shake{animation:shake .45s}
+.card.pop{animation:pop .22s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes pop{50%{transform:scale(1.12)}}
+
+/* ---------- Einteilung wählen ---------- */
+.divide{margin-top:14px}
+.divide .lbl{font-weight:800;font-size:18px}
+.divbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.divbtn{width:50px;height:50px;border-radius:10px;border:2px solid var(--ink);background:var(--panel);font-weight:900;font-size:20px;cursor:pointer;box-shadow:0 3px 0 var(--edge)}
+.divbtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
+.divbtn[aria-checked="true"]{background:var(--sun);color:var(--sun-ink);box-shadow:0 0 0 3px var(--ink)}
+.divcap{margin-top:8px;color:var(--ink-soft);font-weight:700;min-height:1.5em}
+
+/* ---------- Rückmeldung, Aktionen, Tipps ---------- */
+.feedback{margin-top:12px;min-height:58px;padding:9px 14px;border-radius:13px;border:2px solid transparent;font-size:17px;display:flex;align-items:center}
+.feedback.ok{background:var(--ok-bg);border-color:var(--ok)}
+.feedback.bad{background:var(--bad-bg);border-color:var(--bad)}
+.feedback.info{background:var(--panel);border-color:var(--panel-border)}
+.won{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.won .stars{display:flex;gap:4px;font-size:34px}
+.won .stars .star.on{animation:starin .45s cubic-bezier(.3,1.6,.5,1) both}
+.won .stars .star.on:nth-child(2){animation-delay:.15s}
+.won .stars .star.on:nth-child(3){animation-delay:.3s}
+@keyframes starin{from{transform:scale(0) rotate(-40deg)}}
+.won strong{font-size:20px}
+.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.actions .spacer{flex:1}
+.nudge{display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;color:var(--ink-soft)}
+.nudge button{width:48px;min-height:48px;padding:0;font-size:18px}
+.hint{margin-top:14px;padding:14px 16px;border-radius:6px 14px 14px 6px;background:var(--note);color:var(--note-ink);border-left:8px solid var(--note-edge);max-width:780px}
+.hint-title{font-weight:900;font-size:18px}
+.hint-pick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:900;font-size:18px}
+.chip{min-width:48px;min-height:48px;padding:2px 8px;border-radius:11px;border:2px solid var(--note-ink);background:transparent;font-size:17px;cursor:pointer;display:grid;place-items:center}
+.chip.on{background:var(--card);color:var(--card-ink);box-shadow:0 0 0 3px var(--blue)}
+.hint-list{margin:10px 0 0;padding-left:26px;display:grid;gap:6px}
+.hint-list li{line-height:2.05;padding-left:4px}
+.hint-list li::marker{font-weight:900}
+.hint-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.hint .btn{background:transparent;border-color:var(--note-ink);color:var(--note-ink)}
+
+/* ---------- Auswertung ---------- */
+.summary{max-width:760px;position:relative;padding-top:14px}
+.summary h1{font-size:clamp(34px,6vw,54px);font-weight:900;line-height:1.05;margin-top:16px}
+.summary .total{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}
+.summary .total .big{font-size:44px;font-weight:900;display:flex;align-items:center;gap:8px;line-height:1}
+.summary .per{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.summary .per div{padding:8px 10px;border:2px solid var(--panel-border);border-radius:12px;background:var(--panel);text-align:center;font-weight:700;font-size:14px;color:var(--ink-soft)}
+.summary .per .stars{display:flex;gap:2px;font-size:19px;margin-top:3px}
+.summary dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:18px 0 0;font-size:18px}
+.summary dt{font-weight:700}
+.summary dd{margin:0;font-weight:900}
+.summary .advice{margin-top:16px;font-size:19px;max-width:56ch}
+.summary .actions{margin-top:22px}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:12px;height:12px;border-radius:2px;animation:fall 2.4s linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.9}}
+
+/* ---------- Spickzettel ---------- */
+dialog{border:2px solid var(--ink);border-radius:18px;padding:0;background:var(--panel);color:var(--ink);max-width:min(680px,94vw);max-height:90vh;box-shadow:0 10px 0 var(--edge)}
+dialog::backdrop{background:rgba(10,20,40,.55)}
+.sheet{padding:0 22px 22px}
+.sheet-head{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 -22px;padding:14px 22px 12px;background:var(--panel);border-bottom:2px solid var(--panel-border)}
+.sheet h2{font-size:26px;font-weight:900}
+.sheet h3{font-size:19px;font-weight:900;margin-top:16px}
+.sheet p{line-height:2.05;margin-top:2px}
+.sheet .mini{display:block;width:100%;max-width:520px;height:auto;margin:8px 0 0}
+.sheet .mini .axis{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round}
+.sheet .mini .tick{stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+.sheet .mini text{fill:var(--ink);font-weight:800;font-size:17px}
+.sheet .mini .seg1{stroke:var(--blue);stroke-width:7;stroke-linecap:round}
+.sheet .mini .seg2{stroke:var(--bad);stroke-width:7;stroke-linecap:round}
+.sheet .mini .t1{fill:var(--blue)} .sheet .mini .t2{fill:var(--bad)}
+.sheet .mini .dot{fill:var(--ink)}
+
+@media (max-width:560px){
+  body{font-size:16px}
+  .app{padding:10px 12px 24px}
+  .divbtn{width:46px;height:46px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ======================= Startseite ======================= -->
+  <section id="home" class="home">
+    <header class="hero">
+      <h1>Punktlandung</h1>
+      <p class="tagline">Brüche auf der Zahlengeraden</p>
+      <svg class="hero-line" viewBox="0 0 640 176" role="img" aria-label="Zahlengerade von 0 bis 2, in Viertel geteilt. Die Karte 7 Viertel sitzt auf dem siebten Strich.">
+        <rect x="60" y="113" width="260" height="26" rx="4" fill="var(--hl1)"/>
+        <rect x="320" y="113" width="260" height="26" rx="4" fill="var(--hl2)"/>
+        <line class="axis" x1="46" y1="126" x2="606" y2="126"/>
+        <path class="arrow" d="M620 126l-15-8v16z"/>
+        <g id="heroTicks"></g>
+        <text x="60" y="170" text-anchor="middle">0</text>
+        <text x="320" y="170" text-anchor="middle">1</text>
+        <text x="580" y="170" text-anchor="middle">2</text>
+        <g class="flag">
+          <line class="stem" x1="515" y1="64" x2="515" y2="126"/>
+          <circle cx="515" cy="126" r="6.5"/>
+          <rect x="487" y="6" width="56" height="58" rx="12"/>
+          <text x="515" y="30" text-anchor="middle">7</text>
+          <line class="bar" x1="503" y1="36" x2="527" y2="36"/>
+          <text x="515" y="57" text-anchor="middle">4</text>
+        </g>
+      </svg>
+      <p class="lead">Teile die Zahlengerade passend ein. Setze dann jede Bruchzahl genau auf ihren Strich.</p>
+    </header>
+
+    <ol class="how">
+      <li><div><strong>Einteilen</strong>Wähle, in wie viele gleiche Teile jedes Ganze geteilt wird.</div></li>
+      <li><div><strong>Einordnen</strong>Ziehe jede Karte auf den passenden Strich und prüfe deine Lösung.</div></li>
+    </ol>
+
+    <h2>Wähle dein Level</h2>
+    <div class="levels" id="levels"></div>
+    <p class="rules">Eine Runde hat 5 Aufgaben. Pro Aufgabe gibt es bis zu 3 Sterne: ohne Fehler 3, mit 1 oder 2 Fehlern 2, sonst 1. Tipps kosten keine Sterne. Bronze gibt es ab 8, Silber ab 12 und Gold für alle 15 Sterne.</p>
+  </section>
+
+  <!-- ======================= Übung ======================= -->
+  <section id="game" hidden>
+    <header class="bar">
+      <button class="btn quiet small" id="toHome" type="button">Level wählen</button>
+      <span class="lvl" id="lvlName"></span>
+      <div class="pips" id="pips" role="img"></div>
+      <span class="count" id="taskCount"></span>
+      <span class="spacer"></span>
+      <span class="streak" id="streak" hidden></span>
+      <span class="starcount" id="starcount"></span>
+      <button class="btn quiet small" id="openCheat" type="button">Spickzettel</button>
+    </header>
+
+    <div class="task">
+      <div class="steps">
+        <span class="stepchip" id="st1"><b>1</b>Einteilen</span>
+        <span class="stepchip" id="st2"><b>2</b>Einordnen</span>
+      </div>
+      <h2 id="instr"></h2>
+      <p id="instrSub"></p>
+    </div>
+
+    <div class="stage" id="stage">
+      <svg id="svg" aria-hidden="true"></svg>
+      <div class="snap" id="snap" hidden></div>
+      <div id="flags"></div>
+    </div>
+
+    <div class="below-line">
+      <span class="tray-label" id="trayLabel"></span>
+      <span class="unit prose" id="unit" hidden></span>
+    </div>
+    <div class="tray" id="tray"></div>
+
+    <div class="divide" id="divide">
+      <p class="lbl" id="divLbl">Gleiche Teile pro Ganzes:</p>
+      <div class="divbtns" id="divBtns" role="radiogroup" aria-labelledby="divLbl"></div>
+      <p class="divcap" id="divCap"></p>
+    </div>
+
+    <div class="feedback prose" id="feedback" role="status" aria-live="polite"></div>
+
+    <div class="actions">
+      <button class="btn" id="hintBtn" type="button">Tipp</button>
+      <button class="btn quiet" id="changeDiv" type="button" hidden>Einteilung ändern</button>
+      <div class="nudge" id="nudge" hidden>
+        <span>Karte verschieben</span>
+        <button class="btn" id="nudgeL" type="button" aria-label="Karte einen Strich nach links">◀</button>
+        <button class="btn" id="nudgeR" type="button" aria-label="Karte einen Strich nach rechts">▶</button>
+      </div>
+      <span class="spacer"></span>
+      <button class="btn primary" id="mainBtn" type="button"></button>
+    </div>
+
+    <div class="hint" id="hint" hidden></div>
+  </section>
+
+  <!-- ======================= Auswertung ======================= -->
+  <section id="summary" class="summary" hidden></section>
+</div>
+
+<!-- ======================= Spickzettel ======================= -->
+<dialog id="cheat" aria-labelledby="cheatTitle">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2 id="cheatTitle">Spickzettel</h2>
+      <button class="btn small" id="closeCheat" type="button">Schließen</button>
+    </div>
+
+    <h3>Echter Bruch</h3>
+    <p>Der Zähler ist kleiner als der Nenner, zum Beispiel <span class="fr"><span>3</span><span>4</span></span>. Die Zahl liegt zwischen 0 und 1.</p>
+
+    <h3>Unechter Bruch</h3>
+    <p>Der Zähler ist mindestens so groß wie der Nenner, zum Beispiel <span class="fr"><span>7</span><span>4</span></span>. Die Zahl ist 1 oder größer.</p>
+
+    <h3>Gemischte Zahl</h3>
+    <p>Ganze und ein echter Bruch zusammen: <span class="mx"><span class="w">1</span><span class="fr"><span>3</span><span>4</span></span></span> bedeutet 1 + <span class="fr"><span>3</span><span>4</span></span>. Das ist dieselbe Zahl wie <span class="fr"><span>7</span><span>4</span></span>, denn <span class="fr"><span>4</span><span>4</span></span> sind ein Ganzes.</p>
+    <svg class="mini" viewBox="0 0 520 96" role="img" aria-label="Zahlengerade: von 0 bis 1 sind es 4 Viertel, danach kommen noch 3 Viertel bis zum Punkt 7 Viertel.">
+      <line class="axis" x1="20" y1="52" x2="500" y2="52"/>
+      <line class="seg1" x1="30" y1="52" x2="250" y2="52"/>
+      <line class="seg2" x1="250" y1="52" x2="415" y2="52"/>
+      <g id="miniTicks"></g>
+      <circle class="dot" cx="415" cy="52" r="7"/>
+      <text x="30" y="90" text-anchor="middle">0</text>
+      <text x="250" y="90" text-anchor="middle">1</text>
+      <text x="470" y="90" text-anchor="middle">2</text>
+      <text class="t1" x="140" y="26" text-anchor="middle">4 Viertel = 1 Ganzes</text>
+      <text class="t2" x="333" y="26" text-anchor="middle">+ 3 Viertel</text>
+    </svg>
+
+    <h3>Erweitern und Kürzen</h3>
+    <p>Der Wert bleibt gleich: <span class="fr"><span>1</span><span>2</span></span> = <span class="fr"><span>2</span><span>4</span></span> = <span class="fr"><span>4</span><span>8</span></span>. Auf der Zahlengeraden ist das immer derselbe Punkt.</p>
+
+    <h3>Passende Einteilung</h3>
+    <p>Teile jedes Ganze in so viele gleiche Teile, dass die Anzahl durch jeden Nenner teilbar ist. Für <span class="fr"><span>1</span><span>2</span></span> und <span class="fr"><span>2</span><span>3</span></span> passen 6 Teile, denn 6 ist durch 2 und durch 3 teilbar.</p>
+  </div>
+</dialog>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= Aufgaben =================
+   Bruch = [Ganze, Zähler, Nenner]; r = sichtbarer Abschnitt der Zahlengeraden */
+var LEVELS = [
+  { name:'Grundlagen',
+    desc:'Echte Brüche und erste Zahlen über 1. Die Nenner passen gut zusammen.',
+    tasks:[
+      {r:[0,2], f:[[0,1,4],[0,3,4],[0,5,4]]},
+      {r:[0,2], f:[[0,1,3],[0,2,3],[0,4,3]]},
+      {r:[0,2], f:[[0,2,5],[0,4,5],[0,7,5]]},
+      {r:[0,2], f:[[0,1,2],[0,3,4],[0,5,4]]},
+      {r:[0,2], f:[[0,1,2],[1,1,2],[0,3,4]]},
+      {r:[0,2], f:[[0,1,6],[0,5,6],[0,7,6]]},
+      {r:[0,2], f:[[0,1,3],[1,2,3],[0,5,6]]},
+      {r:[0,2], f:[[0,3,8],[0,7,8],[0,9,8]]},
+      {r:[0,2], f:[[0,1,2],[0,5,8],[0,11,8]]},
+      {r:[0,2], f:[[0,3,5],[0,7,10],[0,13,10]]},
+      {r:[0,2], f:[[0,2,3],[0,1,6],[0,5,3]]},
+      {r:[0,2], f:[[0,1,4],[0,3,2],[1,3,4]]}
+    ]},
+  { name:'Über 1 hinaus',
+    desc:'Unechte Brüche und gemischte Zahlen bis 3. Manche Karten gehören auf denselben Punkt.',
+    tasks:[
+      {r:[0,3], f:[[0,3,4],[0,7,4],[2,1,4],[0,5,2]]},
+      {r:[0,3], f:[[0,2,3],[0,5,3],[2,1,3],[0,8,3]]},
+      {r:[0,3], f:[[0,1,2],[0,9,4],[1,3,4],[0,11,4]]},
+      {r:[0,3], f:[[0,4,5],[1,2,5],[0,11,5],[2,3,5]]},
+      {r:[0,3], f:[[0,3,2],[1,1,2],[0,5,4],[2,3,4]]},
+      {r:[0,3], f:[[0,5,6],[0,4,3],[2,1,6],[0,5,2]]},
+      {r:[0,3], f:[[0,4,3],[1,1,3],[0,7,6],[2,5,6]]},
+      {r:[0,3], f:[[0,7,8],[1,3,8],[0,9,4],[2,1,2]]},
+      {r:[0,3], f:[[0,5,3],[2,2,3],[0,1,6],[0,13,6]]},
+      {r:[0,3], f:[[0,7,10],[1,3,5],[0,23,10],[2,1,2]]},
+      {r:[0,3], f:[[0,9,5],[2,1,5],[0,3,10],[1,1,2]]},
+      {r:[0,3], f:[[0,11,4],[2,3,4],[0,3,8],[1,5,8]]}
+    ]},
+  { name:'Knobelstufe',
+    desc:'Verschiedene Nenner, ungekürzte Brüche und Ausschnitte der Zahlengeraden.',
+    need:['kgv','kuerzen','fenster'],
+    tasks:[
+      {k:'kgv',     r:[0,3], f:[[0,1,2],[0,2,3],[1,1,3],[0,5,2],[0,11,6]]},
+      {k:'kuerzen', r:[0,3], f:[[0,6,8],[0,10,8],[1,2,4],[0,9,4],[0,18,8]]},
+      {k:'kgv',     r:[0,2], f:[[0,1,2],[0,3,5],[1,1,10],[0,9,5],[0,3,2]]},
+      {k:'fenster', r:[2,4], f:[[0,5,2],[2,3,4],[0,13,4],[3,1,2],[0,15,4]]},
+      {k:'kuerzen', r:[0,3], f:[[0,4,6],[0,10,6],[1,2,6],[0,8,3],[0,14,6]]},
+      {k:'kgv',     r:[0,2], f:[[0,2,3],[0,3,4],[0,5,4],[1,2,3],[0,17,12]]},
+      {k:'fenster', r:[1,3], f:[[0,4,3],[1,1,2],[0,13,6],[2,2,3],[0,5,2]]},
+      {k:'kuerzen', r:[0,3], f:[[0,9,12],[1,6,8],[0,15,12],[0,10,4],[0,2,8]]},
+      {k:'kgv',     r:[0,2], f:[[0,3,4],[0,5,6],[0,3,2],[1,2,3],[0,13,12]]},
+      {k:'fenster', r:[3,5], f:[[0,7,2],[3,2,3],[0,13,3],[4,1,6],[0,29,6]]},
+      {k:'kgv',     r:[0,3], f:[[0,2,5],[0,1,2],[1,3,10],[0,8,5],[2,1,2]]},
+      {k:'fenster', r:[1,2], f:[[0,5,4],[1,1,2],[0,11,8],[0,15,8],[1,1,8]]}
+    ]}
+];
+var ROUND = 5, DIVS = [2,3,4,5,6,7,8,9,10,11,12];
+var CARD = 56, ROW_H = 62, STEM = 24, BELOW = 56;
+var KEY = 'punktlandung-v1';
+
+/* ================= Mathe-Helfer ================= */
+function gcd(a,b){ return b ? gcd(b, a % b) : Math.abs(a); }
+function lcm(a,b){ return a / gcd(a,b) * b; }
+function top(f){ return f[0]*f[2] + f[1]; }                       // Zähler des unechten Bruchs
+function redDen(f){ return f[2] / gcd(top(f), f[2]); }            // gekürzter Nenner
+function fits(f,n){ return (top(f) * n) % f[2] === 0; }
+function tickOf(f,n,a){ return (top(f) - a*f[2]) * n / f[2]; }
+function minDiv(task){ return task.f.map(redDen).reduce(lcm, 1); }
+function uniq(arr){ return arr.filter(function(v,i){ return arr.indexOf(v) === i; }); }
+function shuffle(a){ for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+
+/* ================= Text-Helfer ================= */
+function fr(n,d){ return '<span class="fr" role="img" aria-label="'+n+'/'+d+'"><span aria-hidden="true">'+n+'</span><span aria-hidden="true">'+d+'</span></span>'; }
+function mx(w,n,d){
+  if (!w) return fr(n,d);
+  return '<span class="mx" role="img" aria-label="'+w+' und '+n+'/'+d+'"><span class="w" aria-hidden="true">'+w+'</span><span class="fr" aria-hidden="true"><span>'+n+'</span><span>'+d+'</span></span></span>';
+}
+function fh(f){ return mx(f[0], f[1], f[2]); }
+function plain(f){ return f[0] ? f[0]+' und '+f[1]+'/'+f[2] : f[1]+'/'+f[2]; }
+function listDE(items){ return items.length < 2 ? items.join('') : items.slice(0,-1).join(', ') + ' und ' + items[items.length-1]; }
+function wholes(w){ return w === 1 ? '1 Ganzes' : w + ' Ganze'; }
+function star(on, extra){ return '<svg class="star '+(on?'on':'off')+(extra?' '+extra:'')+'" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5L2.5 9.5l6.6-.9z"/></svg>'; }
+function stars(n){ var s=''; for (var i=0;i<3;i++) s += star(i<n); return s; }
+
+/* ================= Tipps ================= */
+function divisionHints(task){
+  var reducible = task.f.filter(function(f){ return gcd(f[1], f[2]) > 1; });
+  var dens = uniq(task.f.map(redDen)).sort(function(a,b){ return a-b; });
+  var m = dens.reduce(lcm, 1), big = dens[dens.length-1], others = dens.slice(0,-1);
+  var pre = reducible.length ? 'Nach dem Kürzen ' : '';
+  var h = ['Der Nenner sagt dir, in wie viele gleiche Teile ein Ganzes geteilt ist. Vergleiche die Nenner auf allen Karten.'];
+
+  if (reducible.length){
+    var u = reducible[0], g = gcd(u[1], u[2]);
+    h.push('Hier lohnt sich Kürzen, zum Beispiel '+fr(u[1],u[2])+' = '+fr(u[1]/g,u[2]/g)+'. Kürze alle Brüche so weit wie möglich und vergleiche erst dann die Nenner.');
+  } else if (dens.length === 1){
+    h.push('Alle Karten haben denselben Nenner. Jedes Ganze braucht genau so viele Teile, wie der Nenner angibt.');
+  } else {
+    h.push('Die Nenner sind '+listDE(dens)+'. Du brauchst eine Anzahl, die durch jeden dieser Nenner teilbar ist: ein gemeinsames Vielfaches.');
+  }
+
+  if (dens.length === 1){
+    h.push((pre ? pre+'haben alle Karten den Nenner '+m+'. ' : '')+'Teile jedes Ganze in '+m+' gleiche Teile. Dann ist ein Abschnitt genau '+fr(1,m)+' lang.');
+  } else if (big === m){
+    h.push((pre ? pre+'sind die Nenner '+listDE(dens)+'. ' : '')+m+' ist durch '+listDE(others)+' teilbar. Mit '+m+' Teilen pro Ganzem passt deshalb jede Karte, denn zum Beispiel ist '+fr(1,others[0])+' = '+fr(m/others[0],m)+'.');
+  } else {
+    h.push((pre ? pre+'sind die Nenner '+listDE(dens)+'. ' : '')+'Gesucht ist ihr kleinstes gemeinsames Vielfaches. Gehe die Vielfachen von '+big+' durch: '+big+', '+2*big+', '+3*big+' … Das erste, das auch durch '+listDE(others)+' teilbar ist, passt.');
+  }
+  return h;
+}
+
+function cardHints(f,n){
+  var w=f[0], num=f[1], d=f[2], N=top(f), W=Math.floor(N/d), rem=N-W*d, me=fh(f), g=gcd(num,d);
+  var h=[];
+  var shorten = g>1 ? ' Übrigens: '+fr(num,d)+' lässt sich kürzen zu '+fr(num/g,d/g)+'.' : '';
+  if (w){
+    h.push(me+' ist eine gemischte Zahl: '+wholes(w)+' und noch '+fr(num,d)+' dazu. Die Zahl liegt also zwischen '+w+' und '+(w+1)+'.');
+    h.push('Gehe zuerst zur '+w+'. Von dort aus fehlen noch '+fr(num,d)+'.'+shorten);
+  } else if (N < d){
+    h.push(me+' ist ein echter Bruch: Der Zähler ist kleiner als der Nenner. Die Zahl liegt also zwischen 0 und 1.');
+    h.push('Der Nenner '+d+' bedeutet: Ein Ganzes besteht aus '+d+' gleichen Teilen. Der Zähler '+num+' bedeutet: Du brauchst '+num+' davon.'+shorten);
+  } else {
+    h.push(me+' ist ein unechter Bruch: Der Zähler ist größer als der Nenner. Die Zahl ist also größer als 1. Überlege, wie viele Ganze darin stecken.');
+    h.push(fr(W*d,d)+' sind genau '+wholes(W)+'. Dann bleiben noch '+fr(rem,d)+' übrig. Also ist '+me+' = '+mx(W,rem,d)+' und liegt zwischen '+W+' und '+(W+1)+'.');
+  }
+  var r = rem*n/d, conv='';
+  if (n !== d){
+    if (n % d === 0) conv = 'Erweitere mit '+(n/d)+': '+fr(rem,d)+' = '+fr(r,n)+'. ';
+    else if (d % n === 0) conv = 'Kürze mit '+(d/n)+': '+fr(rem,d)+' = '+fr(r,n)+'. ';
+    else { var g2=gcd(rem,d); conv = 'Kürze und erweitere: '+fr(rem,d)+' = '+fr(rem/g2,d/g2)+' = '+fr(r,n)+'. '; }
+  }
+  h.push('Bei deiner Einteilung ist ein Abschnitt '+fr(1,n)+' lang. '+conv+'Starte bei der '+W+' und zähle '+r+(r===1?' Abschnitt':' Abschnitte')+' nach rechts.');
+  return h;
+}
+
+/* ================= Speicher ================= */
+var store = {
+  load: function(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } },
+  save: function(o){ try { localStorage.setItem(KEY, JSON.stringify(o)); } catch(e){} }
+};
+function medal(n){
+  if (n >= 15) return {name:'Gold', cls:'gold'};
+  if (n >= 12) return {name:'Silber', cls:'silber'};
+  if (n >= 8)  return {name:'Bronze', cls:'bronze'};
+  return null;
+}
+
+/* ================= Elemente ================= */
+function $(id){ return document.getElementById(id); }
+var home=$('home'), game=$('game'), summary=$('summary');
+var stage=$('stage'), svg=$('svg'), flags=$('flags'), snapEl=$('snap'), tray=$('tray');
+var mainBtn=$('mainBtn'), hintBtn=$('hintBtn'), changeDiv=$('changeDiv'), nudge=$('nudge');
+var feedback=$('feedback'), hintEl=$('hint'), divide=$('divide'), divBtns=$('divBtns');
+
+var S = { level:1, tasks:[], idx:0, results:[], streak:0, bestStreak:0,
+          task:null, mode:'div', n:null, pending:null, errors:0, divErrors:0, minimal:false,
+          cards:[], selected:null, hintOpen:false, divTier:1, hintCard:null };
+var G = { rows:0, x0:0, step:1, base:0, total:1, width:0, x:function(i){ return this.x0 + i*this.step; } };
+var drag = null;
+
+function show(el){
+  [home,game,summary].forEach(function(s){ s.hidden = s !== el; });
+  var old = document.querySelector('.confetti'); if (old) old.remove();
+  window.scrollTo(0,0);
+}
+
+/* ================= Startseite ================= */
+function renderHome(){
+  var best = store.load().best || {};
+  $('levels').innerHTML = LEVELS.map(function(L,i){
+    var b = best[i+1], m = b ? medal(b) : null;
+    var bestHtml = b
+      ? star(true)+'<span>Beste Runde: '+b+' von 15</span>'+(m ? '<span class="medal '+m.cls+'">'+m.name+'</span>' : '')
+      : '<span>Noch nicht gespielt</span>';
+    return '<button type="button" class="level" data-level="'+(i+1)+'">'+
+      '<span class="no">Level '+(i+1)+'</span><span class="name">'+L.name+'</span>'+
+      '<span class="desc">'+L.desc+'</span><span class="best">'+bestHtml+'</span></button>';
+  }).join('');
+}
+$('levels').addEventListener('click', function(e){
+  var b = e.target.closest('.level'); if (b) startRound(+b.dataset.level);
+});
+
+/* ================= Runde ================= */
+function pickTasks(L){
+  var idxs = L.tasks.map(function(_,i){ return i; }), pick;
+  for (var t=0; t<60; t++){
+    pick = shuffle(idxs.slice()).slice(0, ROUND).sort(function(a,b){ return a-b; });
+    var tags = pick.map(function(i){ return L.tasks[i].k; });
+    if (!L.need || L.need.every(function(k){ return tags.indexOf(k) >= 0; })) break;
+  }
+  return pick.map(function(i){ return L.tasks[i]; });
+}
+function startRound(level){
+  S.level = level; S.tasks = pickTasks(LEVELS[level-1]);
+  S.idx = 0; S.results = []; S.streak = 0; S.bestStreak = 0;
+  show(game); loadTask();
+}
+function loadTask(){
+  S.task = S.tasks[S.idx];
+  S.mode = 'div'; S.n = null; S.pending = null; S.errors = 0; S.divErrors = 0; S.minimal = false;
+  S.selected = null; S.hintOpen = false; S.divTier = 1; S.hintCard = null;
+  G.rows = 0;
+  tray.innerHTML = ''; flags.innerHTML = '';
+  S.cards = shuffle(S.task.f.slice()).map(function(f,i){
+    var c = { id:i, f:f, tick:null, locked:false, wrong:0, tier:1, row:0 };
+    c.slot = document.createElement('div'); c.slot.className = 'slot';
+    c.el = makeCard(c); c.slot.appendChild(c.el); tray.appendChild(c.slot);
+    return c;
+  });
+  setFeedback('', '');
+  refresh(true);
+}
+
+/* ================= Anzeige ================= */
+function setFeedback(type, html){ feedback.className = 'feedback prose' + (type ? ' '+type : ''); feedback.innerHTML = html; }
+
+function refresh(fresh){
+  var t = S.task, a = t.r[0], b = t.r[1], L = LEVELS[S.level-1];
+  $('lvlName').textContent = 'Level '+S.level+': '+L.name;
+  $('taskCount').textContent = 'Aufgabe '+(S.idx+1)+' von '+S.tasks.length;
+  var total = S.results.reduce(function(s,r){ return s + r.stars; }, 0);
+  $('starcount').innerHTML = star(true)+'<span>'+total+'</span>';
+  $('starcount').setAttribute('aria-label', total+' Sterne gesammelt');
+  $('pips').innerHTML = S.tasks.map(function(_,i){
+    var r = S.results[i];
+    return '<span class="pip'+(r?' done':'')+(i===S.idx && !r?' now':'')+'">'+(r?r.stars:'')+'</span>';
+  }).join('');
+  $('pips').setAttribute('aria-label', 'Aufgabe '+(S.idx+1)+' von '+S.tasks.length);
+  var st = $('streak'); st.hidden = S.streak < 2; st.textContent = 'Serie ×'+S.streak;
+
+  var div = S.mode === 'div', place = S.mode === 'place', done = S.mode === 'done';
+  $('st1').className = 'stepchip' + (div ? ' on' : ' past');
+  $('st1').firstChild.textContent = div ? '1' : '✓';
+  $('st2').className = 'stepchip' + (place ? ' on' : done ? ' past' : '');
+  $('st2').firstChild.textContent = done ? '✓' : '2';
+
+  var win = (a > 0 || b - a === 1) ? ' <span class="note">Achtung: Du siehst nur den Ausschnitt von '+a+' bis '+b+'.</span>' : '';
+  if (div){
+    $('instr').textContent = 'Teile die Zahlengerade ein.';
+    $('instrSub').innerHTML = 'In wie viele gleiche Teile musst du jedes Ganze teilen, damit jede Zahl auf den Karten genau auf einem Strich landet?' + win;
+    $('trayLabel').textContent = 'Diese Zahlen ordnest du gleich ein:';
+  } else if (place){
+    $('instr').textContent = 'Setze jede Zahl auf ihren Strich.';
+    $('instrSub').innerHTML = 'Ziehe die Karten auf die Zahlengerade. Du kannst auch eine Karte antippen und danach die Stelle auf der Zahlengeraden.' + win;
+    $('trayLabel').textContent = 'Deine Karten:';
+  } else {
+    $('instr').textContent = 'Aufgabe gelöst.';
+    $('instrSub').innerHTML = 'Alle Zahlen sitzen auf ihrem Strich.';
+    $('trayLabel').textContent = '';
+  }
+  $('unit').hidden = div;
+  tray.hidden = done;
+  if (!div) $('unit').innerHTML = '1 Abschnitt = ' + fr(1, S.n);
+
+  divide.hidden = !div;
+  if (div){
+    divBtns.innerHTML = DIVS.map(function(n){
+      return '<button type="button" class="divbtn" role="radio" aria-checked="'+(S.n===n)+'" data-n="'+n+'">'+n+'</button>';
+    }).join('');
+    $('divCap').textContent = S.n ? 'Jedes Ganze hat jetzt '+S.n+' gleiche Teile.' : 'Tippe eine Zahl an und beobachte die Zahlengerade.';
+  }
+  S.cards.forEach(function(c){ c.el.classList.toggle('idle', !place || c.locked); });
+
+  changeDiv.hidden = !place;
+  hintBtn.hidden = done;
+  updateMain(); updateNudge();
+  drawLine(fresh); layoutFlags(); renderHint();
+}
+
+function updateMain(){
+  if (S.mode === 'div'){
+    mainBtn.textContent = (S.pending && S.pending === S.n) ? 'Mit '+S.n+' Teilen weiter' : 'Einteilung prüfen';
+    mainBtn.disabled = !S.n;
+  } else if (S.mode === 'place'){
+    mainBtn.textContent = 'Prüfen';
+    mainBtn.disabled = !S.cards.every(function(c){ return c.tick !== null; });
+  } else {
+    mainBtn.textContent = S.idx + 1 < S.tasks.length ? 'Nächste Aufgabe' : 'Runde auswerten';
+    mainBtn.disabled = false;
+  }
+}
+function updateNudge(){
+  var c = S.selected;
+  nudge.hidden = !(S.mode === 'place' && c && c.tick !== null && !c.locked);
+}
+
+/* ================= Zahlengerade zeichnen ================= */
+function drawLine(fresh){
+  var a = S.task.r[0], units = S.task.r[1] - a, n = S.n || 1;
+  var W = stage.clientWidth || 600;
+  var base = S.mode === 'div' ? 30 : 8 + G.rows*ROW_H + STEM;
+  var H = base + BELOW;
+  var x0 = a > 0 ? 50 : 40, x1 = W - 54, total = units*n, step = (x1 - x0)/total;
+  G.x0 = x0; G.step = step; G.base = base; G.total = total; G.width = W;
+  stage.style.height = H + 'px';
+  var s = '', i, x;
+  for (i = 0; i < units; i++){
+    s += '<rect class="hl '+(i%2?'b':'a')+'" x="'+(x0+i*n*step).toFixed(1)+'" y="'+(base-13)+'" width="'+(n*step).toFixed(1)+'" height="26" rx="4"/>';
+  }
+  if (a > 0) s += '<line class="axis dash" x1="'+(x0-40)+'" y1="'+base+'" x2="'+(x0-16)+'" y2="'+base+'"/>';
+  s += '<line class="axis" x1="'+(x0-12)+'" y1="'+base+'" x2="'+(x1+28)+'" y2="'+base+'"/>';
+  s += '<path class="arrow" d="M'+(x1+42)+' '+base+'l-15 -8v16z"/>';
+  for (i = 0; i <= total; i++){
+    x = (x0 + i*step).toFixed(1);
+    var whole = i % n === 0, h = whole ? 17 : 10;
+    s += '<line class="tick '+(whole?'int':'sub')+'" x1="'+x+'" y1="'+(base-h)+'" x2="'+x+'" y2="'+(base+h)+'"/>';
+    if (whole) s += '<text class="num" x="'+x+'" y="'+(base+45)+'" text-anchor="middle">'+(a + i/n)+'</text>';
+  }
+  svg.setAttribute('viewBox', '0 0 '+W+' '+H);
+  svg.setAttribute('width', W); svg.setAttribute('height', H);
+  svg.innerHTML = s;
+  svg.classList.toggle('fresh', !!fresh);
+}
+
+function layoutFlags(){
+  var placed = S.cards.filter(function(c){ return c.tick !== null; })
+    .sort(function(p,q){ return p.tick - q.tick || p.id - q.id; });
+  var last = [];
+  placed.forEach(function(c){
+    var x = G.x(c.tick), r = 0;
+    while (last[r] !== undefined && x - last[r] < CARD + 6) r++;
+    last[r] = x; c.row = r;
+  });
+  if (S.mode !== 'div' && last.length > G.rows){ G.rows = last.length; drawLine(false); }
+  placed.forEach(function(c){
+    c.el.style.left = (G.x(c.tick) - CARD/2).toFixed(1) + 'px';
+    c.el.style.top = (G.base - STEM - c.row*ROW_H - CARD) + 'px';
+    c.el.style.setProperty('--stem', (STEM + c.row*ROW_H - 2) + 'px');
+    c.el.style.zIndex = String(30 - c.row);
+  });
+}
+
+/* ================= Karten ================= */
+function makeCard(c){
+  var el = document.createElement('button');
+  el.type = 'button'; el.className = 'card idle';
+  el.innerHTML = fh(c.f);
+  el.setAttribute('aria-label', 'Karte ' + plain(c.f));
+
+  el.addEventListener('pointerdown', function(e){
+    if (e.button) return;
+    if (S.mode === 'div'){ setFeedback('info', 'Erst einteilen, dann einordnen: Wähle unten, in wie viele gleiche Teile jedes Ganze geteilt wird.'); return; }
+    if (S.mode !== 'place' || c.locked || drag) return;
+    e.preventDefault();
+    try { el.setPointerCapture(e.pointerId); } catch(err){}
+    drag = { c:c, id:e.pointerId, sx:e.clientX, sy:e.clientY, moved:false, snap:null,
+             rect:el.getBoundingClientRect(), lift: e.pointerType === 'touch' ? 38 : 0 };
+  });
+  el.addEventListener('pointermove', function(e){
+    if (!drag || drag.c !== c || drag.id !== e.pointerId) return;
+    var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+    if (!drag.moved){
+      if (Math.abs(dx) + Math.abs(dy) < 8) return;
+      drag.moved = true; el.classList.add('dragging'); el.classList.remove('missed');
+    }
+    var cx = drag.rect.left + CARD/2 + dx;
+    var bottom = drag.rect.bottom + dy - drag.lift;
+    var sr = stage.getBoundingClientRect();
+    var inside = bottom > sr.top - 30 && bottom < sr.bottom - 8 &&
+                 cx > sr.left + G.x0 - 44 && cx < sr.left + G.x(G.total) + 44;
+    var tx = dx, ty = dy - drag.lift;
+    if (inside){
+      var i = clamp(Math.round((cx - sr.left - G.x0)/G.step), 0, G.total);
+      tx += sr.left + G.x(i) - cx;
+      drag.snap = i;
+      snapEl.hidden = false; snapEl.style.left = (G.x(i) - 1) + 'px'; snapEl.style.height = G.base + 'px';
+    } else { drag.snap = null; snapEl.hidden = true; }
+    el.style.transform = 'translate('+tx+'px,'+ty+'px)';
+  });
+  function end(e, cancelled){
+    if (!drag || drag.c !== c || drag.id !== e.pointerId) return;
+    var d = drag; drag = null;
+    el.classList.remove('dragging'); el.style.transform = ''; snapEl.hidden = true;
+    if (!d.moved){ if (!cancelled) select(S.selected === c ? null : c); return; }
+    if (cancelled) return;
+    if (d.snap !== null) place(c, d.snap); else toTray(c);
+    select(null);
+  }
+  el.addEventListener('pointerup', function(e){ end(e, false); });
+  el.addEventListener('pointercancel', function(e){ end(e, true); });
+
+  el.addEventListener('keydown', function(e){
+    if (S.mode !== 'place' || c.locked) return;
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); select(S.selected === c ? null : c); }
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+      e.preventDefault();
+      var d = e.key === 'ArrowRight' ? 1 : -1;
+      place(c, c.tick === null ? (d > 0 ? 0 : G.total) : clamp(c.tick + d, 0, G.total));
+      el.focus();
+    } else if ((e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Escape') && c.tick !== null){
+      e.preventDefault(); toTray(c); el.focus();
+    }
+  });
+  return el;
+}
+
+function select(c){
+  S.selected = c;
+  S.cards.forEach(function(o){ o.el.classList.toggle('selected', o === c); });
+  if (c && S.hintOpen && S.mode === 'place'){ S.hintCard = c; renderHint(); }
+  updateNudge();
+}
+function place(c, i){
+  if (c.tick === null){ flags.appendChild(c.el); c.el.classList.add('placed'); }
+  c.tick = i; c.el.classList.remove('missed');
+  c.el.setAttribute('aria-label', 'Karte ' + plain(c.f) + ', eingeordnet');
+  layoutFlags(); updateMain(); updateNudge();
+  c.el.classList.remove('pop'); void c.el.offsetWidth; c.el.classList.add('pop');
+}
+function toTray(c){
+  c.tick = null; c.el.classList.remove('placed','pop');
+  c.el.style.left = ''; c.el.style.top = ''; c.el.style.zIndex = ''; c.el.style.removeProperty('--stem');
+  c.el.setAttribute('aria-label', 'Karte ' + plain(c.f));
+  c.slot.appendChild(c.el);
+  layoutFlags(); updateMain(); updateNudge();
+}
+
+stage.addEventListener('click', function(e){
+  if (S.mode !== 'place' || e.target.closest('.card')) return;
+  var c = S.selected;
+  if (!c || c.locked){ setFeedback('info', 'Tippe zuerst eine Karte an. Tippe danach auf die Stelle, an die sie gehört.'); return; }
+  var sr = stage.getBoundingClientRect();
+  place(c, clamp(Math.round((e.clientX - sr.left - G.x0)/G.step), 0, G.total));
+  select(null);
+});
+$('nudgeL').addEventListener('click', function(){ moveSelected(-1); });
+$('nudgeR').addEventListener('click', function(){ moveSelected(1); });
+function moveSelected(d){
+  var c = S.selected;
+  if (c && c.tick !== null && !c.locked) place(c, clamp(c.tick + d, 0, G.total));
+}
+
+/* ================= Schritt 1: Einteilung ================= */
+divBtns.addEventListener('click', function(e){
+  var b = e.target.closest('.divbtn'); if (!b || S.mode !== 'div') return;
+  S.n = +b.dataset.n;
+  if (S.pending !== S.n) S.pending = null;
+  setFeedback('', '');
+  refresh(true);
+  var again = divBtns.querySelector('[data-n="'+S.n+'"]'); if (again) again.focus({preventScroll:true});
+});
+
+function checkDivision(){
+  var n = S.n, t = S.task;
+  if (S.pending === n){ toPlacing(false); return; }
+  var bad = S.cards.filter(function(c){ return !fits(c.f, n); });
+  if (bad.length){
+    S.errors++; S.divErrors++;
+    bad.forEach(function(c){ c.el.classList.remove('shake'); void c.el.offsetWidth; c.el.classList.add('shake'); });
+    var names = listDE(bad.map(function(c){ return fh(c.f); }));
+    setFeedback('bad', '<span>Bei '+n+' Teilen '+(bad.length===1?'landet ':'landen ')+names+' zwischen zwei Strichen. Probiere eine andere Einteilung.'+(S.divErrors >= 2 ? ' Unten steht ein Tipp für dich.' : '')+'</span>');
+    if (S.divErrors >= 2){ S.hintOpen = true; S.divTier = Math.max(S.divTier, Math.min(3, S.divErrors)); renderHint(); revealHint(); }
+    return;
+  }
+  if (n === minDiv(t)){ toPlacing(true); return; }
+  S.pending = n;
+  setFeedback('info', '<span>'+n+' Teile funktionieren. Es geht aber auch mit weniger Teilen, dann musst du später weniger Striche zählen. Ändere die Einteilung oder mache mit '+n+' Teilen weiter.</span>');
+  updateMain();
+}
+function toPlacing(minimal){
+  S.minimal = minimal; S.mode = 'place'; S.pending = null; S.hintOpen = false; S.hintCard = null;
+  G.rows = S.cards.length >= 4 ? 3 : 2;
+  setFeedback('ok', '<span>'+(minimal ? 'Passt genau. ' : 'Weiter geht’s. ')+'Jeder Abschnitt ist jetzt '+fr(1,S.n)+' lang.</span>');
+  refresh(false);
+}
+changeDiv.addEventListener('click', function(){
+  S.cards.forEach(function(c){ c.locked = false; c.el.classList.remove('locked','missed','selected'); if (c.tick !== null){ c.tick = null; c.el.classList.remove('placed'); c.el.style.left=''; c.el.style.top=''; c.el.style.zIndex=''; c.slot.appendChild(c.el); } });
+  S.mode = 'div'; S.selected = null; S.pending = null; S.hintOpen = false; G.rows = 0;
+  setFeedback('', '');
+  refresh(true);
+});
+
+/* ================= Schritt 2: Einordnen prüfen ================= */
+function checkPlacement(){
+  var a = S.task.r[0], wrong = [];
+  select(null);
+  S.cards.forEach(function(c){
+    if (c.locked) return;
+    var t = tickOf(c.f, S.n, a);
+    if (c.tick === t){ c.locked = true; c.el.classList.add('locked','idle'); c.el.setAttribute('aria-label', 'Karte '+plain(c.f)+', richtig eingeordnet'); }
+    else wrong.push({ c:c, dir: t > c.tick ? 'weiter rechts' : 'weiter links' });
+  });
+  if (!wrong.length){ finishTask(); return; }
+  S.errors += wrong.length;
+  var needHelp = null;
+  wrong.forEach(function(w){
+    w.c.wrong++; toTray(w.c);
+    w.c.el.classList.add('missed'); w.c.el.classList.remove('shake'); void w.c.el.offsetWidth; w.c.el.classList.add('shake');
+    if (w.c.wrong >= 2 && !needHelp) needHelp = w.c;
+  });
+  var right = S.cards.length - wrong.length;
+  var parts = wrong.map(function(w){ return fh(w.c.f)+' liegt '+w.dir; });
+  setFeedback('bad', '<span>'+(wrong.length===1 ? 'Eine Karte sitzt' : wrong.length+' Karten sitzen')+' noch nicht richtig: '+listDE(parts)+'. '+
+    (right ? 'Die anderen stimmen. ' : '')+'Setze die Karte'+(wrong.length>1?'n':'')+' neu und prüfe noch einmal.'+(needHelp ? ' Unten steht ein Tipp für dich.' : '')+'</span>');
+  if (needHelp){ S.hintOpen = true; S.hintCard = needHelp; needHelp.tier = Math.max(needHelp.tier, Math.min(3, needHelp.wrong)); }
+  refresh(false);
+  if (needHelp) revealHint();
+}
+
+function finishTask(){
+  var n = S.errors === 0 ? 3 : S.errors <= 2 ? 2 : 1;
+  S.results[S.idx] = { stars:n, minimal:S.minimal, errors:S.errors };
+  S.streak = n === 3 ? S.streak + 1 : 0;
+  S.bestStreak = Math.max(S.bestStreak, S.streak);
+  S.mode = 'done'; S.hintOpen = false;
+
+  var title = n === 3 ? 'Punktlandung!' : n === 2 ? 'Gut gelöst!' : 'Geschafft!';
+  var text = n === 3 ? 'Alles beim ersten Versuch richtig.' : n === 2 ? 'Fast ohne Fehler.' : 'Dranbleiben lohnt sich. Die Tipps helfen dir bei der nächsten Aufgabe.';
+  var twins = null;
+  S.cards.forEach(function(p){ S.cards.forEach(function(q){ if (!twins && p.id < q.id && p.tick === q.tick) twins = [p,q]; }); });
+  var extra = '';
+  if (twins) extra = ' Aufgefallen? '+fh(twins[0].f)+' und '+fh(twins[1].f)+' sitzen auf demselben Punkt. Es ist dieselbe Zahl, nur anders geschrieben.';
+  else if (!S.minimal) extra = ' Mit '+minDiv(S.task)+' Teilen pro Ganzem hätte es auch geklappt.';
+  if (S.streak >= 2) extra += ' Serie: '+S.streak+' Aufgaben nacheinander ohne Fehler.';
+  setFeedback('ok', '<div class="won"><div class="stars" role="img" aria-label="'+n+' von 3 Sternen">'+stars(n)+'</div><div><strong>'+title+'</strong> '+text+extra+'</div></div>');
+  refresh(false);
+  if (S.streak >= 2){ var st = $('streak'); st.classList.remove('bump'); void st.offsetWidth; st.classList.add('bump'); }
+  mainBtn.focus({preventScroll:true});
+}
+
+mainBtn.addEventListener('click', function(){
+  if (S.mode === 'div') checkDivision();
+  else if (S.mode === 'place') checkPlacement();
+  else if (S.idx + 1 < S.tasks.length){ S.idx++; loadTask(); }
+  else showSummary();
+});
+
+/* ================= Tipp-Zettel ================= */
+function revealHint(){ if (!hintEl.hidden && hintEl.scrollIntoView) hintEl.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+function renderHint(){
+  if (!S.hintOpen || S.mode === 'done'){ hintEl.hidden = true; return; }
+  var html = '', hints, tier;
+  if (S.mode === 'div'){
+    hints = divisionHints(S.task); tier = S.divTier;
+    html += '<p class="hint-title">Tipp zum Einteilen</p>';
+  } else {
+    var open = S.cards.filter(function(c){ return !c.locked; });
+    var c = S.hintCard;
+    if (!c || c.locked) c = S.hintCard = (S.selected && !S.selected.locked) ? S.selected : open[0];
+    if (!c){ hintEl.hidden = true; return; }
+    hints = cardHints(c.f, S.n); tier = c.tier;
+    html += '<div class="hint-pick"><span>Tipp zur Karte</span>' + open.map(function(o){
+      return '<button type="button" class="chip'+(o===c?' on':'')+'" data-card="'+o.id+'" aria-pressed="'+(o===c)+'">'+fh(o.f)+'</button>';
+    }).join('') + '</div>';
+  }
+  html += '<ol class="hint-list">' + hints.slice(0,tier).map(function(h){ return '<li>'+h+'</li>'; }).join('') + '</ol>';
+  html += '<div class="hint-actions">' + (tier < hints.length ? '<button type="button" class="btn small" data-more>Noch ein Tipp</button>' : '') +
+          '<button type="button" class="btn small quiet" data-close>Tipp schließen</button></div>';
+  hintEl.innerHTML = html; hintEl.hidden = false;
+}
+hintBtn.addEventListener('click', function(){
+  S.hintOpen = !S.hintOpen;
+  if (S.hintOpen && S.mode === 'place' && S.selected) S.hintCard = S.selected;
+  renderHint();
+  if (S.hintOpen && hintEl.scrollIntoView) hintEl.scrollIntoView({block:'nearest', behavior:'smooth'});
+});
+hintEl.addEventListener('click', function(e){
+  var chip = e.target.closest('[data-card]');
+  if (chip){ S.hintCard = S.cards.filter(function(c){ return c.id === +chip.dataset.card; })[0]; renderHint(); return; }
+  if (e.target.closest('[data-more]')){
+    if (S.mode === 'div') S.divTier = Math.min(3, S.divTier + 1);
+    else if (S.hintCard) S.hintCard.tier = Math.min(3, S.hintCard.tier + 1);
+    renderHint();
+    if (hintEl.scrollIntoView) hintEl.scrollIntoView({block:'nearest', behavior:'smooth'});
+    return;
+  }
+  if (e.target.closest('[data-close]')){ S.hintOpen = false; renderHint(); hintBtn.focus({preventScroll:true}); }
+});
+
+/* ================= Auswertung ================= */
+function showSummary(){
+  var total = S.results.reduce(function(s,r){ return s + r.stars; }, 0);
+  var perfect = S.results.filter(function(r){ return r.stars === 3; }).length;
+  var minimal = S.results.filter(function(r){ return r.minimal; }).length;
+  var data = store.load(); data.best = data.best || {};
+  var isBest = !data.best[S.level] || total > data.best[S.level];
+  if (isBest){ data.best[S.level] = total; store.save(data); }
+  var m = medal(total);
+  var title = total === 15 ? 'Perfekte Runde!' : total >= 12 ? 'Starke Runde!' : total >= 8 ? 'Gute Runde!' : 'Runde geschafft!';
+  var advice, nextLevel = 0;
+  if (total >= 12 && S.level < 3){ nextLevel = S.level + 1; advice = 'Das sitzt. Du bist bereit für Level '+nextLevel+': '+LEVELS[nextLevel-1].name+'.'; }
+  else if (total >= 12){ advice = 'Du findest passende Einteilungen und triffst auch schwierige Bruchzahlen sicher. Schaffst du alle 15 Sterne ohne Tipp?'; }
+  else if (total >= 8){ advice = 'Du bist auf einem guten Weg. Spiele noch eine Runde und nutze bei Fehlern den Tipp, bevor du neu setzt.'; }
+  else if (S.level > 1){ advice = 'Das war noch schwer. Übe eine Runde in Level '+(S.level-1)+' oder lies den Spickzettel und versuche es dann noch einmal.'; }
+  else { advice = 'Lies den Spickzettel und öffne bei jeder Karte den Tipp. Dann klappt die nächste Runde besser.'; }
+
+  summary.innerHTML =
+    '<p class="lvl" style="font-weight:800;color:var(--ink-soft)">Level '+S.level+': '+LEVELS[S.level-1].name+'</p>'+
+    '<h1>'+title+'</h1>'+
+    '<div class="total"><span class="big">'+star(true)+total+' von 15</span>'+
+      (m ? '<span class="medal '+m.cls+'">'+m.name+'</span>' : '')+
+      (isBest && total > 0 ? '<span class="medal">Neue Bestleistung</span>' : '')+'</div>'+
+    '<div class="per">'+S.results.map(function(r,i){ return '<div>Aufgabe '+(i+1)+'<span class="stars" role="img" aria-label="'+r.stars+' von 3 Sternen">'+stars(r.stars)+'</span></div>'; }).join('')+'</div>'+
+    '<dl><dt>Aufgaben ohne Fehler</dt><dd>'+perfect+' von '+S.results.length+'</dd>'+
+        '<dt>Kleinste passende Einteilung gefunden</dt><dd>'+minimal+' von '+S.results.length+'</dd>'+
+        '<dt>Längste Serie</dt><dd>'+S.bestStreak+'</dd></dl>'+
+    '<p class="advice">'+advice+'</p>'+
+    '<div class="actions">'+
+      (nextLevel ? '<button type="button" class="btn primary" data-go="'+nextLevel+'">Level '+nextLevel+' starten</button><button type="button" class="btn" data-go="'+S.level+'">Noch eine Runde</button>'
+                 : '<button type="button" class="btn primary" data-go="'+S.level+'">Noch eine Runde</button>')+
+      '<button type="button" class="btn quiet" data-go="0">Level wählen</button></div>';
+  show(summary);
+  if (total >= 12) confetti();
+}
+summary.addEventListener('click', function(e){
+  var b = e.target.closest('[data-go]'); if (!b) return;
+  var lv = +b.dataset.go;
+  if (lv) startRound(lv); else { renderHome(); show(home); }
+});
+function confetti(){
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var box = document.createElement('div'); box.className = 'confetti'; box.setAttribute('aria-hidden','true');
+  var colors = ['var(--sun)','var(--blue)','var(--bad)','var(--ok)'];
+  for (var i=0;i<34;i++){
+    var p = document.createElement('i');
+    p.style.left = (Math.random()*100)+'%';
+    p.style.background = colors[i % colors.length];
+    p.style.animationDelay = (Math.random()*0.7)+'s';
+    p.style.animationDuration = (1.8+Math.random()*1.2)+'s';
+    box.appendChild(p);
+  }
+  document.body.appendChild(box);
+  setTimeout(function(){ box.remove(); }, 3800);
+}
+
+/* ================= Sonstiges ================= */
+$('toHome').addEventListener('click', function(){ renderHome(); show(home); });
+var cheat = $('cheat');
+$('openCheat').addEventListener('click', function(){ if (cheat.showModal) cheat.showModal(); else cheat.setAttribute('open',''); });
+$('closeCheat').addEventListener('click', function(){ if (cheat.close) cheat.close(); else cheat.removeAttribute('open'); });
+cheat.addEventListener('click', function(e){ if (e.target === cheat && cheat.close) cheat.close(); });
+
+function onResize(){
+  if (game.hidden || !S.task) return;
+  if (Math.abs(stage.clientWidth - G.width) < 1) return;
+  drawLine(false); layoutFlags();
+}
+window.addEventListener('resize', onResize);
+if (window.ResizeObserver) new ResizeObserver(onResize).observe(stage);
+
+/* statische Striche für Titelbild und Spickzettel */
+(function(){
+  var s = '', i, x;
+  for (i=0;i<=8;i++){ x = 60 + i*65; var h = i%4===0 ? 17 : 10; s += '<line class="tick" x1="'+x+'" y1="'+(126-h)+'" x2="'+x+'" y2="'+(126+h)+'"/>'; }
+  $('heroTicks').innerHTML = s; s = '';
+  for (i=0;i<=8;i++){ x = 30 + i*55; var k = i%4===0 ? 13 : 8; s += '<line class="tick" x1="'+x+'" y1="'+(52-k)+'" x2="'+x+'" y2="'+(52+k)+'"/>'; }
+  $('miniTicks').innerHTML = s;
+})();
+
+renderHome();
+})();
+</script>
+</body>
+</html>
